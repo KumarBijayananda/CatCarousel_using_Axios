@@ -1,5 +1,5 @@
 import * as Carousel from "./Carousel.js";
-import axios from "axios";
+// import axios from "axios";
 
 // The breed selection input element.
 const breedSelect = document.getElementById("breedSelect");
@@ -114,7 +114,7 @@ async function retrieveBreed() {
     let breedImageURL =
       "https://api.thecatapi.com/v1/images/search?limit=10&breed_ids=" +
       selectedBreed;
-    Carousel.clear();
+
     const responseImage = await axios.get(breedImageURL, {
       headers: {
         "x-api-key": API_KEY,
@@ -126,30 +126,38 @@ async function retrieveBreed() {
 
     //creating elements and loading info about the breed into infoDump
     const dataImage = responseImage.data;
-    const name = document.createElement("h3");
-    name.textContent = "Name : " + dataImage[0].breeds[0].name;
-    const desc = document.createElement("p");
-    desc.textContent = "Description : " + dataImage[0].breeds[0].description;
-    const temp = document.createElement("p");
-    temp.textContent = "Temperament : + " + dataImage[0].breeds[0].temperament;
-    const origin = document.createElement("p");
-    origin.textContent = "Origin : " + dataImage[0].breeds[0].origin;
 
-    infoDump.appendChild(name);
-    infoDump.appendChild(desc);
-    infoDump.appendChild(temp);
-    infoDump.appendChild(origin);
+    if (dataImage.length <= 0) {
+      const missing = document.createElement("h3");
+      missing.textContent = "Sorry no images for this breed!!";
+      infoDump.appendChild(missing);
+    } else {
+      const name = document.createElement("h3");
+      name.textContent = "Name : " + dataImage[0].breeds[0].name;
+      const desc = document.createElement("p");
+      desc.textContent = "Description : " + dataImage[0].breeds[0].description;
+      const temp = document.createElement("p");
+      temp.textContent =
+        "Temperament : + " + dataImage[0].breeds[0].temperament;
+      const origin = document.createElement("p");
+      origin.textContent = "Origin : " + dataImage[0].breeds[0].origin;
 
-    for (let i = 0; i < 10; i++) {
-      const url = dataImage[i].url;
-      const imageID = dataImage[i].id;
-      const imgAlt = "Image of " + dataImage[i].breeds[0].name;
+      infoDump.appendChild(name);
+      infoDump.appendChild(desc);
+      infoDump.appendChild(temp);
+      infoDump.appendChild(origin);
 
-      //pushing images into carousel
-      const imageItem = Carousel.createCarouselItem(url, imgAlt, imageID);
-      Carousel.appendCarousel(imageItem);
+      for (let i = 0; i < 10; i++) {
+        const url = dataImage[i].url;
+        const imageID = dataImage[i].id;
+        const imgAlt = "Image of " + dataImage[i].breeds[0].name;
+
+        //pushing images into carousel
+        const imageItem = Carousel.createCarouselItem(url, imgAlt, imageID);
+        Carousel.appendCarousel(imageItem);
+      }
+      Carousel.start();
     }
-    Carousel.start();
   } catch (error) {
     console.log(`Error from Retrieve Breed func: ${error}`);
   }
