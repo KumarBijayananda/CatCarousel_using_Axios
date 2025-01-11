@@ -14,15 +14,6 @@ const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 const API_KEY =
   "live_NabEGs4pVZcSYNR1VA4zejo8v93fn1tLUWg948UpGnxjDTGoTTZFXqnbvJKzV87x";
 
-/**
- * 1. Create an async function "initialLoad" that does the following:
- * - Retrieve a list of breeds from the cat API using fetch().
- * - Create new <options> for each of these breeds, and append them to breedSelect.
- *  - Each option should have a value attribute equal to the id of the breed.
- *  - Each option should display text equal to the name of the breed.
- * This function should execute immediately.
- */
-
 let breedArray = []; //array to hold different breeds
 
 //interceptor for request sent
@@ -60,8 +51,17 @@ axios.interceptors.response.use(
   }
 );
 
+/**
+ * 1. Create an async function "initialLoad" that does the following:
+ * - Retrieve a list of breeds from the cat API using fetch().
+ * - Create new <options> for each of these breeds, and append them to breedSelect.
+ *  - Each option should have a value attribute equal to the id of the breed.
+ *  - Each option should display text equal to the name of the breed.
+ * This function should execute immediately.
+ */
 async function initialLoad() {
   try {
+    //get method to bring breeds info
     const response = await axios.get("https://api.thecatapi.com/v1/breeds", {
       headers: {
         "x-api-key": "API_KEY",
@@ -70,7 +70,7 @@ async function initialLoad() {
         updateProgress(progressEvent);
       },
     });
-
+    //storing breed info into an array and assinging it to options element
     breedArray = response.data;
     for (let i = 0; i < breedArray.length; i++) {
       const option = document.createElement("option");
@@ -81,9 +81,10 @@ async function initialLoad() {
   } catch (error) {
     console.log(`Error from Inital Load func: ${error}`);
   }
+  //calling retrieve function so it can load the first breed into the carousel
   retrieveBreed();
 }
-initialLoad();
+initialLoad(); //calling initialLoad so it can load the breeds into dropdown
 /**
  * 2. Create an event handler for breedSelect that does the following:
  * - Retrieve information on the selected breed from the cat API using fetch().
@@ -122,6 +123,8 @@ async function retrieveBreed() {
         updateProgress(progressEvent);
       },
     });
+
+    //creating elements and loading info about the breed into infoDump
     const dataImage = responseImage.data;
     const name = document.createElement("h3");
     name.textContent = "Name : " + dataImage[0].breeds[0].name;
@@ -141,6 +144,8 @@ async function retrieveBreed() {
       const url = dataImage[i].url;
       const imageID = dataImage[i].id;
       const imgAlt = "Image of " + dataImage[i].breeds[0].name;
+
+      //pushing images into carousel
       const imageItem = Carousel.createCarouselItem(url, imgAlt, imageID);
       Carousel.appendCarousel(imageItem);
     }
@@ -190,9 +195,10 @@ async function retrieveBreed() {
  * - In your response interceptor, remove the progress cursor style from the body element.
  */
 
+//function to show progress bar
 function updateProgress(progressEvent) {
   var percentCompleted = Math.round(
-    (progressEvent.loaded * 100) / progressEvent.total
+    (progressEvent.loaded / progressEvent.total) * 100 //calculating percentage loaded
   );
   progressBar.style.width = percentCompleted + "%";
 }
@@ -210,6 +216,7 @@ function updateProgress(progressEvent) {
  */
 export async function favourite(imgId) {
   try {
+    //when favourite button is clicked check if the image has already been favourited
     const checkFav = await axios.get(
       `https://api.thecatapi.com/v1/favourites?image_id=${imgId}`,
       {
@@ -219,6 +226,7 @@ export async function favourite(imgId) {
       }
     );
 
+    //if the image is already favourited, delete it, if not add it to favourites
     if (checkFav.data[0]) {
       deleteImage(checkFav.data[0].id);
     } else {
@@ -245,13 +253,16 @@ export async function favourite(imgId) {
  *    repeat yourself in this section.
  */
 
+//event listener for Get favourites button
 getFavouritesBtn.addEventListener("click", getFavourites);
 
+//function to retrieve favourited images
 async function getFavourites() {
   console.log("Get Favorite");
 
   infoDump.innerHTML = "";
   Carousel.clear();
+
   const responseImage = await axios.get(
     "https://api.thecatapi.com/v1/favourites",
     {
@@ -278,7 +289,6 @@ async function getFavourites() {
   const favInfo = document.createElement("h2");
   favInfo.textContent = "Images of favourited cats";
   infoDump.appendChild(favInfo);
-  // getImagesAndPushToCarousel("");
 }
 
 async function deleteImage(favID) {
@@ -292,7 +302,6 @@ async function deleteImage(favID) {
   }
 }
 
-// async function getImagesAndPushToCarousel(url) {}
 /**
  * 10. Test your site, thoroughly!
  * - What happens when you try to load the Malayan breed?
